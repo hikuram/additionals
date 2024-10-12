@@ -173,6 +173,22 @@ module Additionals
       assert_select "table.list.#{table_css}.sort-by-#{column_css}.sort-desc"
     end
 
+    def assert_locales_validness(plugin:, file_cnt:, locales:, control_string:, control_english:)
+      lang_files_count = Rails.root.glob("plugins/#{plugin}/config/locales/*.yml").size
+
+      assert_equal file_cnt, lang_files_count
+      valid_languages.each do |lang|
+        assert set_language_if_valid(lang)
+        if lang.to_s == 'en'
+          assert_equal control_english, l(control_string)
+        elsif locales.include? lang.to_s
+          assert_not l(control_string) == control_english, lang
+        end
+      end
+
+      set_language_if_valid 'en'
+    end
+
     def assert_dashboard_query_blocks(blocks = [])
       blocks.each do |block_def|
         block_def[:user_id]
@@ -196,6 +212,22 @@ module Additionals
     # should be dropped after dropping Rails 6.x support / Redmine 5.1 support
     def self.fixture_date_format(date)
       date.try(:to_fs, :db) || date.to_s(:db)
+    end
+
+    def WikiPage.generate(**options)
+      content = options.delete(:content) || 'Example text'
+
+      WikiPage.new(**options).tap do |page|
+        page.title ||= 'Wiki test page'
+        page.wiki ||= Project.find(1).wiki
+        page.author ||= User.find 2 if defined?(page.author)
+        page.content = WikiContent.new text: content
+      end
+    end
+
+    def WikiPage.generate!(**options)
+      WikiPage.find_by(title: options[:title])&.delete if options[:title]
+      WikiPage.generate(**options).tap(&:save!)
     end
   end
 end

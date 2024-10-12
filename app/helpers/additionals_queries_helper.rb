@@ -36,7 +36,7 @@ module AdditionalsQueriesHelper
           session[session_key].nil? ||
           session[session_key][:project_id] != (@project ? @project.id : nil)
       # Give it a name, required to be valid
-      @query = query_class.new name: '_'
+      @query = query_class.new name: '_', project: @project
       @query.project = @project
       @query.user_filter = user_filter if user_filter
       @query.search_string = search_string if search_string
@@ -54,6 +54,7 @@ module AdditionalsQueriesHelper
       @query = query_class.find_by id: session[session_key][:id] if session[session_key][:id]
       session_data = Rails.cache.read additionals_query_cache_key(object_type)
       @query ||= query_class.new(name: '_',
+                                 project: @project,
                                  filters: session_data.nil? ? nil : session_data[:filters],
                                  group_by: session_data.nil? ? nil : session_data[:group_by],
                                  column_names: session_data.nil? ? nil : session_data[:column_names],
@@ -294,7 +295,7 @@ module AdditionalsQueriesHelper
 
   def set_flash_from_bulk_save(entries, unsaved_ids, name_plural:)
     if unsaved_ids.empty?
-      flash[:notice] = l :notice_successful_update unless entries.empty?
+      flash[:notice] = flash_msg :update unless entries.empty?
     else
       flash[:error] = l :notice_failed_to_save_entity,
                         name_plural:,

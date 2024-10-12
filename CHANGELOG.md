@@ -1,9 +1,15 @@
 # Changelog
 
-## 3.3.0
+- Move assign to me button to assign to block
+- svg icons support for Redmine 6
+
+## 3.4.0
+
+## 3.3.2
 
 - Maintenance release
 - Ruby 3.1 required
+- Working on Tabler icons integration
 
 ## 3.2.0
 
